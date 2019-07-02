@@ -32,6 +32,7 @@
 
 void gift_key(uint8_t *k);
 void gift_encrypt(uint8_t* text);
+void rotate_doubleword(uint8_t *t);
 
 /**
  * TODO:
@@ -53,17 +54,21 @@ uint8_t get_key(uint8_t* k)
 
 uint8_t get_pt(uint8_t* pt)
 {
+    // Rotate double-words (Do this before the trigger so that we are primarily
+    // playing with clean data)
+    rotate_doubleword(pt);
+
     trigger_high();
 
     #ifdef ADD_JITTER
     for (volatile uint8_t k = 0; k < (*pt & 0x0F); k++);
     #endif
-    //uint8_t tmp[16] = {0xba,0xdc,0x0f,0xfe,0xeb,0xad,0xf0,0x0d,0xba,0xdc,0x0f,0xfe,0xeb,0xad,0xf0,0x0d};
 
-    //simpleserial_put('r', 16, pt);
     gift_encrypt(pt); /* encrypting the data block */
 
     trigger_low();
+
+    rotate_doubleword(pt);
     simpleserial_put('r', 16, pt);
     return 0x00;
 }
@@ -117,17 +122,7 @@ void gift_key(uint8_t* k){
 
     // Rotate double-words to transform the input into the format the gift code
     // is expecting
-    for (uint8_t i = 0; i < 4; i++) {
-        uint8_t tmp;
-        uint8_t inv = 7 - i;
-        tmp         = k[i];
-        k[i]        = k[inv];
-        k[inv]      = tmp;
-
-        tmp        = k[i + 8];
-        k[i + 8]   = k[inv + 8];
-        k[inv + 8] = tmp;
-    }
+    rotate_doubleword(k);
 
     //Cast to get in proper datatype
     uint64_t key_h = *((uint64_t *)k);
@@ -148,46 +143,10 @@ void gift_key(uint8_t* k){
  * Returns the result of the encryption in the text pointer.
  */
 void gift_encrypt(uint8_t* t){
-    // Both the STM32 and the AVR XMEGA are little-endian devices, so the
-    // big-endian byte transmission means that a simple cast will not translate
-    // the array of bytes into the proper result. Thus, we preprocess first to
-    // translate the byte array into the 64-bit datatypes the crypto code
-    // expects, despite neither of the targets having 64-bit datapaths :P
     uint64_t text[2] = {0};
-
-    //Compiler bug?! ugh, it thinks it's ub, so..... :( (This is for
-    // `arm-none-eabi`)
-    //text_h = (t[7] << 56) | (t[6] << 48) | (t[5] << 40) | (t[4] << 32) | (t[3] << 24) | (t[2] << 16) | (t[1] << 8) | t[0];
-
-    // This works, for ARM, but avr-gcc complains mightily
-    /*
-    //uint32_t tt[4];
-    tt[1] = (t[0]  << 24) | (t[1]  << 16) | (t[2]  << 8) | t[3];
-    tt[0] = (t[4]  << 24) | (t[5]  << 16) | (t[6]  << 8) | t[7];
-    tt[3] = (t[8]  << 24) | (t[9]  << 16) | (t[10] << 8) | t[11];
-    tt[2] = (t[12] << 24) | (t[13] << 16) | (t[14] << 8) | t[15];
-
-    text[0] = *((uint64_t *)tt);
-    text[1] = *((uint64_t *)(tt + 2));
-    */
-
-    // Rotate double-words
-    ///*
-    for (uint8_t i = 0; i < 4; i++) {
-        uint8_t tmp;
-        uint8_t inv = 7 - i;
-        tmp         = t[i];
-        t[i]        = t[inv];
-        t[inv]      = tmp;
-
-        tmp        = t[i + 8];
-        t[i + 8]   = t[inv + 8];
-        t[inv + 8] = tmp;
-    }
 
     text[0] = *((uint64_t *)t);
     text[1] = *((uint64_t *)(t + 8));
-
 
 #ifdef GIFT128
     uint64_t *res = 0;
@@ -201,8 +160,20 @@ void gift_encrypt(uint8_t* t){
      *(uint64_t *)t       = encrypt(text[0], subkeys, 28, false);
      *(uint64_t *)(t + 8) = encrypt(text[1], subkeys, 28, false);
 #endif
+}
 
-    // And now the other way, to make the other end happy
+/**
+ * Takes an array of 16 bytes, and swaps the endianness of the two double-words
+ * (uint64_t) that make up the array. It returns the result in the same array.
+ */
+
+void rotate_doubleword(uint8_t *t) {
+    // Both the STM32 and the AVR XMEGA are little-endian devices, so the
+    // big-endian byte transmission means that a simple cast will not translate
+    // the array of bytes into the proper result. Thus, we preprocess first to
+    // translate the byte array into the 64-bit datatypes the crypto code
+    // expects, despite neither of the targets having 64-bit datapaths :P
+
     for (uint8_t i = 0; i < 4; i++) {
         uint8_t tmp;
         uint8_t inv = 7 - i;
