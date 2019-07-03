@@ -43,3 +43,4 @@ hardware/victims/firmware/*/*.sym
 !hardware/victims/firmware/87c51/**
 
 __pycache__/
+gift

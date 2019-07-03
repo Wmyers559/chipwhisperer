@@ -59,9 +59,9 @@ include $(FIRMWAREPATH)/Makefile.inc
 .PHONY: base4 base3
 
 base4:
-	@rm gift
+	@rm -f gift
 	@ln -sf ~/Documents/gift_impl/gift gift
 
 base3:
-	@rm gift
+	@rm -f gift
 	@ln -sf ~/Documents/gift_impl/giftBase3 gift
