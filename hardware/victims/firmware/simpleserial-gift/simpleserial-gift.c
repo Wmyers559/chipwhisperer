@@ -27,10 +27,8 @@
 #define false 0
 #define true  1
 
-#define GIFT64
-//#define GIFT128
-
 void gift_key(uint8_t *k);
+void gift_mode(uint8_t* text);
 void gift_encrypt(uint8_t* text);
 void rotate_doubleword(uint8_t *t);
 
@@ -40,9 +38,9 @@ void rotate_doubleword(uint8_t *t);
  * get_mask command to change the number of rounds?
  */
 
-uint8_t get_mask(uint8_t* m)
+uint8_t get_mode(uint8_t* m)
 {
-    //aes_indep_mask(m);
+    gift_mode(m);
     return 0x00;
 }
 
@@ -101,22 +99,25 @@ int main(void)
     putch('\n');
 
     simpleserial_init();
-    simpleserial_addcmd('k', 16, get_key);
-    simpleserial_addcmd('p', 16,  get_pt);
-    simpleserial_addcmd('x',  0,   reset);
-    simpleserial_addcmd('m', 18, get_mask);
+    simpleserial_addcmd('k', 16,  get_key);
+    simpleserial_addcmd('p', 16,   get_pt);
+    simpleserial_addcmd('x',  0,    reset);
+    simpleserial_addcmd('m',  2, get_mode);
     while(1)
         simpleserial_get();
 }
 
 // Some gift-specific functions that need to get moved to the gift crypto code
-// at some point
+// at some point or some other location
 // TODO
 
-uint64_t *subkeys = NULL;
+uint64_t *subkeys      = NULL;
+_Bool     largeblocks  = false;  // false for 64-bit blocksize,
+                                 // true for 128-bit blocks
 
 /**
- * Sets the key for the gift encryption
+ * Sets the key for the gift encryption. Note that this uses 29/41 rounds to
+ * match the default setting of the command-line tool
  */
 void gift_key(uint8_t* k){
 
@@ -128,17 +129,27 @@ void gift_key(uint8_t* k){
     uint64_t key_h = *((uint64_t *)k);
     uint64_t key_l = *((uint64_t *)(k + 8));
 
-#ifdef GIFT128
-    subkeys = key_schedule128(key_h, key_l, 41, false);
-#else
-    subkeys = key_schedule(key_h, key_l, 29, false, false);
-#endif
+    if (largeblocks) {
+        // 128-bit cypher mode
+        subkeys = key_schedule128(key_h, key_l, 41, false);
+    } else {
+        // 64-bit cypher mode
+        subkeys = key_schedule(key_h, key_l, 29, false, false);
+    }
 }
 
+/**
+ * Sets the cypher block size. *m should be falsy to set a 64-bit size, and
+ * truthy for a 128-bit block size.
+ */
+void gift_mode(uint8_t *m){
+    largeblocks = !!(*m);
+}
 
 /**
  * Wrapper function to perform the gift encryption. This allows for (reasonably)
- * transparent cryto size switches, if we choose to do this.
+ * transparent cryto size switches, if we choose to do this. Note that this uses
+ * 29/41 rounds to match the default setting of the command-line tool
  *
  * Returns the result of the encryption in the text pointer.
  */
@@ -148,18 +159,20 @@ void gift_encrypt(uint8_t* t){
     text[0] = *((uint64_t *)t);
     text[1] = *((uint64_t *)(t + 8));
 
-#ifdef GIFT128
-    uint64_t *res = 0;
-    res = encrypt128(text[0], text[1], subkeys, 41, false);
+    if (largeblocks) {
+        // 128-bit cypher mode
+        uint64_t *res = 0;
+        res = encrypt128(text[0], text[1], subkeys, 41, false);
 
-    *(uint64_t *)t       = res[0];
-    *(uint64_t *)(t + 8) = res[1];
-    free(res);  //Ouch, don't really want to malloc/free on ucontrollers :(
+        *(uint64_t *)t       = res[0];
+        *(uint64_t *)(t + 8) = res[1];
+        free(res);  //Ouch, don't really want to malloc/free on ucontrollers :(
 
-#else
-     *(uint64_t *)t       = encrypt(text[0], subkeys, 28, false);
-     *(uint64_t *)(t + 8) = encrypt(text[1], subkeys, 28, false);
-#endif
+    } else {
+        // 64-bit cypher mode
+        *(uint64_t *)t       = encrypt(text[0], subkeys, 29, false);
+        *(uint64_t *)(t + 8) = encrypt(text[1], subkeys, 29, false);
+    }
 }
 
 /**
