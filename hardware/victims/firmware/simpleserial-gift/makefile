@@ -41,7 +41,7 @@ EXTRA_OPTS = NO_EXTRA_OPTS
 CFLAGS += -D$(EXTRA_OPTS)
 
 ifeq ($(CRYPTO_TARGET),)
-CRYPTO_TARGET = AVRCRYPTOLIB
+CRYPTO_TARGET = NONE
 endif
 
 ifeq ($(CRYPTO_OPTIONS),)
@@ -55,3 +55,13 @@ include ../simpleserial/Makefile.simpleserial
 FIRMWAREPATH = ../.
 include $(FIRMWAREPATH)/Makefile.inc
 
+# These are specific rules to swap the versions of the gift code
+.PHONY: base4 base3
+
+base4:
+	@rm gift
+	@ln -sf ~/Documents/gift_impl/gift gift
+
+base3:
+	@rm gift
+	@ln -sf ~/Documents/gift_impl/giftBase3 gift
