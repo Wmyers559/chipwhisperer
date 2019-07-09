@@ -44,7 +44,7 @@ setup(
                 'chipwhisperer.hardware.naeusb',
                 #'chipwhisperer.tests',
                 ],
-    package_dir = {'': 'software'},
+    package_dir = {'': './'},
     install_requires = [
         'configobj',
         'pyserial',
