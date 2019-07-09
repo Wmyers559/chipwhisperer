@@ -32,11 +32,6 @@ void gift_mode(uint8_t* text);
 void gift_encrypt(uint8_t* text);
 void rotate_doubleword(uint8_t *t);
 
-/**
- * TODO:
- * Implement switchable cypher modes using the get_mode command, maybe reuse the
- * get_mask command to change the number of rounds?
- */
 
 uint8_t get_mode(uint8_t* m)
 {
@@ -56,7 +51,8 @@ uint8_t get_pt(uint8_t* pt)
     // playing with clean data)
     rotate_doubleword(pt);
 
-    trigger_high();
+    /* Trigger calls have been moved to bracket the exact encryption calls */
+    //trigger_high();
 
     #ifdef ADD_JITTER
     for (volatile uint8_t k = 0; k < (*pt & 0x0F); k++);
@@ -64,7 +60,7 @@ uint8_t get_pt(uint8_t* pt)
 
     gift_encrypt(pt); /* encrypting the data block */
 
-    trigger_low();
+    //trigger_low();
 
     rotate_doubleword(pt);
     simpleserial_put('r', 16, pt);
@@ -162,7 +158,10 @@ void gift_encrypt(uint8_t* t){
     if (largeblocks) {
         // 128-bit cypher mode
         uint64_t *res = 0;
+
+        trigger_high();
         res = encrypt128(text[0], text[1], subkeys, 41, false);
+        trigger_low();
 
         *(uint64_t *)t       = res[0];
         *(uint64_t *)(t + 8) = res[1];
@@ -170,8 +169,10 @@ void gift_encrypt(uint8_t* t){
 
     } else {
         // 64-bit cypher mode
+        trigger_high();
         *(uint64_t *)t       = encrypt(text[0], subkeys, 29, false);
         *(uint64_t *)(t + 8) = encrypt(text[1], subkeys, 29, false);
+        trigger_low();
     }
 }
 
