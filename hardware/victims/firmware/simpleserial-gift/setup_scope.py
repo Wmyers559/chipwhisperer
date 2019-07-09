@@ -5,8 +5,8 @@
 #
 # Assumes that you are using an OPENADC chipwhisperer (LITE or PRO)
 
-PLATFORM = 'CWLITEARM'
-#PLATFORM = 'CW303'
+#PLATFORM = 'CWLITEARM'
+PLATFORM = 'CW303'
 
 import binascii
 import os
