@@ -98,7 +98,7 @@ int main(void)
     simpleserial_addcmd('k', 16,  get_key);
     simpleserial_addcmd('p', 16,   get_pt);
     simpleserial_addcmd('x',  0,    reset);
-    simpleserial_addcmd('m',  2, get_mode);
+    simpleserial_addcmd('m',  1, get_mode);
     while(1)
         simpleserial_get();
 }
