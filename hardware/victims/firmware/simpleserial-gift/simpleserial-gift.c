@@ -22,30 +22,30 @@
 #include "simpleserial.h"
 #include <stdint.h>
 #include <stdlib.h>
-//#include <stdbool.h>
 
 #define false 0
 #define true  1
 
 void gift_key(uint8_t *k);
-void gift_mode(uint8_t* text);
-void gift_encrypt(uint8_t* text);
+void gift_mode(uint8_t *m);
+void gift_encrypt(uint8_t *t);
+
 void rotate_doubleword(uint8_t *t);
 
 
-uint8_t get_mode(uint8_t* m)
+uint8_t get_mode(uint8_t *m)
 {
     gift_mode(m);
     return 0x00;
 }
 
-uint8_t get_key(uint8_t* k)
+uint8_t get_key(uint8_t *k)
 {
     gift_key(k);
     return 0x00;
 }
 
-uint8_t get_pt(uint8_t* pt)
+uint8_t get_pt(uint8_t *pt)
 {
     // Rotate double-words (Do this before the trigger so that we are primarily
     // playing with clean data)
@@ -67,7 +67,7 @@ uint8_t get_pt(uint8_t* pt)
     return 0x00;
 }
 
-uint8_t reset(uint8_t* x)
+uint8_t reset(uint8_t *x)
 {
     // Reset key here if needed
     return 0x00;
@@ -105,7 +105,7 @@ int main(void)
 
 // Some gift-specific functions that need to get moved to the gift crypto code
 // at some point or some other location
-// TODO
+// Not getting moved at the moment due to the trigger calls
 
 uint64_t *subkeys      = NULL;
 _Bool     largeblocks  = false;  // false for 64-bit blocksize,
@@ -115,7 +115,7 @@ _Bool     largeblocks  = false;  // false for 64-bit blocksize,
  * Sets the key for the gift encryption. Note that this uses 29/41 rounds to
  * match the default setting of the command-line tool
  */
-void gift_key(uint8_t* k){
+void gift_key(uint8_t *k){
 
     // Rotate double-words to transform the input into the format the gift code
     // is expecting
@@ -149,7 +149,7 @@ void gift_mode(uint8_t *m){
  *
  * Returns the result of the encryption in the text pointer.
  */
-void gift_encrypt(uint8_t* t){
+void gift_encrypt(uint8_t *t){
     uint64_t text[2] = {0};
 
     text[0] = *((uint64_t *)t);
