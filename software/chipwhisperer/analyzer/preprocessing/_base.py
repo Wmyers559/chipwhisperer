@@ -26,15 +26,14 @@
 #=================================================
 import logging
 
-from chipwhisperer.common.api.autoscript import AutoScript
-from chipwhisperer.common.utils.pluginmanager import Plugin
-from chipwhisperer.common.utils.tracesource import TraceSource, ActiveTraceObserver
+from chipwhisperer.common.utils.tracesource import TraceSource, PassiveTraceObserver
 from chipwhisperer.common.utils.parameter import setupSetParam
 from chipwhisperer.common.utils import util
 from chipwhisperer.common.utils.util import camel_case_deprecated
-from chipwhisperer.common.api.ProjectFormat import Project, IndividualIterable
+from chipwhisperer.common.api.ProjectFormat import Project
+from chipwhisperer.common.traces import Trace
 
-class PreprocessingBase(TraceSource, ActiveTraceObserver, AutoScript, Plugin):
+class PreprocessingBase(TraceSource, PassiveTraceObserver):
     """
     Base Class for all preprocessing modules
     Derivable Classes work like this:
@@ -45,12 +44,11 @@ class PreprocessingBase(TraceSource, ActiveTraceObserver, AutoScript, Plugin):
 
     def __init__(self, traceSource=None, name=None):
         self._enabled = False
-        ActiveTraceObserver.__init__(self)
+        PassiveTraceObserver.__init__(self)
         if name is None:
             TraceSource.__init__(self, self.getName())
         else:
             TraceSource.__init__(self, name=name)
-        AutoScript.__init__(self)
         if isinstance(traceSource, Project):
             traceSource = traceSource.trace_manager()
         self.setTraceSource(traceSource, blockSignal=True)
@@ -188,11 +186,17 @@ class PreprocessingBase(TraceSource, ActiveTraceObserver, AutoScript, Plugin):
         return self.__repr__()
 
     def preprocess(self):
-        """ Note: Currently just puts the data from this class into a project
+        """Process all traces.
+
+        Returns:
+            Project: A new project containing the processed traces.
+
+        .. versionadded: 5.1
+            Add preprocess method to Preprocessing module.
         """
         proj = Project()
 
         for i in range(self.num_traces()):
-            proj.traces.append((self.get_trace(i), self.get_textin(i),
+            proj.traces.append(Trace(self.get_trace(i), self.get_textin(i),
                                 self.get_textout(i), self.get_known_key(i)))
         return proj
