@@ -49,7 +49,7 @@ uint8_t get_pt(uint8_t *pt)
 {
     // Rotate double-words (Do this before the trigger so that we are primarily
     // playing with clean data)
-    rotate_doubleword(pt);
+    //rotate_doubleword(pt);
 
     /* Trigger calls have been moved to bracket the exact encryption calls */
     //trigger_high();
@@ -62,20 +62,20 @@ uint8_t get_pt(uint8_t *pt)
 
     //trigger_low();
 
-    rotate_doubleword(pt);
+    //rotate_doubleword(pt);
     simpleserial_put('r', 16, pt);
     return 0x00;
 }
 
 uint8_t reset(uint8_t *x)
-{
+{ 
     // Reset key here if needed
     return 0x00;
 }
 
 int main(void)
 {
-    uint8_t tmp[KEY_LENGTH] = DEFAULT_KEY;
+    //uint8_t tmp[KEY_LENGTH] = DEFAULT_KEY;
 
     platform_init();
     init_uart();
@@ -83,7 +83,7 @@ int main(void)
 
     //aes_indep_init();
     //aes_indep_key(tmp);
-    gift_key(tmp);
+    //gift_key(tmp);
 
     /* Uncomment this to get a HELLO message for debug */
 
@@ -95,13 +95,13 @@ int main(void)
     putch('\n');
 
     simpleserial_init();
-    simpleserial_addcmd('k', 16,  get_key);
+    simpleserial_addcmd('k', 10,  get_key);
     simpleserial_addcmd('p', 16,   get_pt);
     simpleserial_addcmd('x',  0,    reset);
     simpleserial_addcmd('m',  1, get_mode);
     while(1)
         simpleserial_get();
-}
+} 
 
 // Some gift-specific functions that need to get moved to the gift crypto code
 // at some point or some other location
@@ -110,6 +110,7 @@ int main(void)
 uint64_t *subkeys      = NULL;
 _Bool     largeblocks  = false;  // false for 64-bit blocksize,
                                  // true for 128-bit blocks
+uint8_t  *key = NULL; 
 
 /**
  * Sets the key for the gift encryption. Note that this uses 29/41 rounds to
@@ -119,19 +120,9 @@ void gift_key(uint8_t *k){
 
     // Rotate double-words to transform the input into the format the gift code
     // is expecting
-    rotate_doubleword(k);
-
-    //Cast to get in proper datatype
-    uint64_t key_h = *((uint64_t *)k);
-    uint64_t key_l = *((uint64_t *)(k + 8));
-
-    if (largeblocks) {
-        // 128-bit cypher mode
-        subkeys = key_schedule128(key_h, key_l, 41, false);
-    } else {
-        // 64-bit cypher mode
-        subkeys = key_schedule(key_h, key_l, 29, false, false);
-    }
+    //rotate_doubleword(k);
+    key = k;
+    return;
 }
 
 /**
@@ -155,25 +146,10 @@ void gift_encrypt(uint8_t *t){
     text[0] = *((uint64_t *)t);
     text[1] = *((uint64_t *)(t + 8));
 
-    if (largeblocks) {
-        // 128-bit cypher mode
-        uint64_t *res = 0;
-
-        trigger_high();
-        res = encrypt128(text[0], text[1], subkeys, 41, false);
-        trigger_low();
-
-        *(uint64_t *)t       = res[0];
-        *(uint64_t *)(t + 8) = res[1];
-        free(res);  //Ouch, don't really want to malloc/free on ucontrollers :(
-
-    } else {
-        // 64-bit cypher mode
-        trigger_high();
-        *(uint64_t *)t       = encrypt(text[0], subkeys, 29, false);
-        *(uint64_t *)(t + 8) = encrypt(text[1], subkeys, 29, false);
-        trigger_low();
-    }
+    trigger_high();
+    encrypt_fly(t, key, 31);
+    trigger_low();
+    return;
 }
 
 /**
