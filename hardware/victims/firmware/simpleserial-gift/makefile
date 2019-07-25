@@ -56,7 +56,7 @@ FIRMWAREPATH = ../.
 include $(FIRMWAREPATH)/Makefile.inc
 
 # These are specific rules to swap the versions of the gift code
-.PHONY: base4 base3
+.PHONY: base4 base3 present32-speed present8-mem present32-mem
 
 base4:
 	@rm -f gift
@@ -65,3 +65,21 @@ base4:
 base3:
 	@rm -f gift
 	@ln -sf ~/Documents/gift_impl/giftBase3 gift
+
+present8-mem:
+	@rm -f gift
+	@ln -sf ~/Documents/gift_impl/gift/8bit gift
+
+present32-mem:
+	@rm -f gift
+	@ln -sf ~/Documents/gift_impl/gift/32bit gift
+	@ln -sf ~/Documents/gift_impl/gift/32bit/mem_crypto.c gift/crypto.c
+	@ln -sf ~/Documents/gift_impl/gift/32bit/mem_crypto.h gift/crypto.h
+
+
+present32-speed:
+	@rm -f gift
+	@ln -sf ~/Documents/gift_impl/gift/32bit/ gift
+	@ln -sf ~/Documents/gift_impl/gift/32bit/fast_crypto.c gift/crypto.c
+	@ln -sf ~/Documents/gift_impl/gift/32bit/fast_crypto.h gift/crypto.h
+
