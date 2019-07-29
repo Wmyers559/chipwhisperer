@@ -26,7 +26,7 @@ copyright = "2019, NewAE Technology Inc."
 author = "NewAE Technology Inc."
 
 # The full version, including alpha/beta/rc tags
-release = '5.1.0'
+release = '5.1.1'
 
 
 # -- General configuration ---------------------------------------------------
@@ -71,6 +71,7 @@ html_theme_options = {
     'github_type': 'watch',
     'extra_nav_links': {
         'Hardware Docs': 'https://wiki.newae.com/Main_Page#Hardware_Documentation',
+        'Our Source Code': 'https://github.com/newaetech/chipwhisperer',
     },
     'sidebar_width': '265px',
     'page_width': '1000px',
@@ -147,7 +148,9 @@ def create_tutorial_files(app, config):
                 tutorial_link = 'tutorial-' + tutorial_id
                 out_rstfile.write('.. role:: raw-latex(raw)\n    :format: latex\n\n')
                 out_rstfile.write('.. _{}:\n\n'.format(tutorial_link))
-                out_rstfile.write('.. include:: {}'.format(tutorial_input_path))
+                # ..todo:: get linking to work instead of copying.
+                #out_rstfile.write('.. include:: {}'.format(tutorial_input_path))
+                out_rstfile.write(in_rstfile.read())
 
         generated_files.append(tutorial_output_path)
 

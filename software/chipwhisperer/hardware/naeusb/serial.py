@@ -52,11 +52,6 @@ class USART(object):
         self._stopbits = 1
         self._parity = "none"
 
-    def delay(self, s):
-        if os.name == "nt":
-            return
-        time.sleep(s)
-
     def init(self, baud=115200, stopbits=1, parity="none"):
         """
         Open the serial port, set baud rate, parity, etc.
@@ -161,7 +156,6 @@ class USART(object):
                 dlen -= len(newdata)
             waiting = self.inWaiting()
             timeout -= 1
-            self.delay(0.0000001)
 
         return resp
 

@@ -9,7 +9,6 @@ or the hard way.
 
 Basic
  * :ref:`install-virtual-machine` (Recommended)
- * :ref:`install-windows-auto`
 
 Advanced
  * :ref:`prerequisites`
@@ -83,42 +82,6 @@ the Jupyter Notebook server running in the virtual machine.
 .. _VirtualBox Extension Pack: https://download.virtualbox.org/virtualbox/6.0.6/Oracle_VM_VirtualBox_Extension_Pack-6.0.6.vbox-extpack
 
 
-.. _install-windows-auto:
-
-*****************
-Windows Installer
-*****************
-
-A 32-bit and a 64-bit Windows installer will also be available in the
-future, typically from the `releases`_ page on Github attached as
-assets. The installer packages together:
-
- * ChipWhisperer directory (same as in GIT)
- * Python binary & required libraries.
- * Windows USB Drivers
- * Binary to run Jupyter
-
-This will install ChipWhisperer to a location on your hard drive. Note
-it must be somewhere your user owns, as the portable Jupyter install
-will not run from areas the user cannot write to.
-*C:\\Users\\<YOUR_USER>* is a good install location, but *C:\\Program
-Files (x86)\\* isn't.
-
-.. note::
-
-   You will need to install compilers for the firmware manually (i.e.
-   `ARM toolchain`_ or the `AVR-GCC standalone`_) and place it on your *PATH*.
-
-You are now ready to run ChipWhisperer. You can run it by navigating to the
-chosen install directory and double clicking on the ChipWhisperer executable.
-This should open a command terminal that will start the Jupyter server and
-connect to it in your browser.
-
-.. _ARM toolchain: https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads
-.. _AVR-GCC standalone: https://www.microchip.com/mymicrochip/filehandler.aspx?ddocname=en607654
-.. _releases: https://github.com/newaetech/chipwhisperer/releases
-
-
 .. _install-repo:
 
 *************
@@ -150,17 +113,27 @@ GitHub Releases
 
 Once you have a working Python 3 installation, you're ready to install and run ChipWhisperer.
 
-First, download a ChipWhisperer release. You can get these from the `releases`_ page. Generally, the latest release is a good choice, but you might need an older version for various reasons. You want the source code in .zip or .tar.gz format - not a VBox image.
+First, download a ChipWhisperer release. You can get these from the `releases`_ page.
+Generally, the latest release is a good choice, but you might need an older version
+for various reasons. You want the source code in .zip or .tar.gz format - not a VBox
+image.
 
-Next, uncompress your downloaded source code somewhere. Generally, 'somewhere' will become your ChipWhisperer working directory. For example, on Windows, you might want to use *C:\\chipwhisperer\\*.
+Next, uncompress your downloaded source code somewhere. Generally, 'somewhere' will
+become your ChipWhisperer working directory. For example, on Windows, you might
+want to use *C:\\chipwhisperer\\*.
 
-Once you've got the file, install the python dependencies and run the Python install procedure (setup.py). Use the develop command to indicate that the files will probably be changing frequently. to do this, open a terminal and run the following, adjusting paths as needed:
+Once you've got the file, install the python dependencies and run the Python
+install procedure (setup.py). Use the develop command to indicate that the files
+will probably be changing frequently. to do this, open a terminal and run the
+following, adjusting paths as needed:
 
 .. code:: bash
 
-	cd chipwhisperer/software
-	pip install -r requirements.txt
+	cd chipwhisperer
 	python setup.py develop
+
+    # to be able to run jupyter and the tutorials
+    pip install -r jupyter/requirements.txt
 
 
 To test, run python and try importing the chipwhisperer module:
@@ -169,21 +142,29 @@ To test, run python and try importing the chipwhisperer module:
 
     >>> import chipwhisperer as cw
 
-If you want to run the tutorial notebooks, run:
+If you want to run the tutorials you can now start the
+:ref:`Jupyter Notebook server <starting>`.
 
-.. code::
-
-    jupyter notebook
-
-A new window should be opened in your browser.
 
 .. _releases: https://github.com/newaetech/chipwhisperer/releases
-
 
 .. _install-repo-pypi:
 
 PyPi
 ====
+
+If you want to use **chipwhisperer** as a standalone python package and are not
+interested in having all the tutorials and extra jupyter notebook stuff, this
+installation method is for you::
+
+    pip install chipwhisperer
+
+Will install the *chipwhisperer/software/chipwhisperer* python package in your
+site packages. Now you can go play around with the :ref:`Python API <api>`, or
+take a look at some example :ref:`tutorials <tutorials>` The tutorials are all
+written in jupyter notebook, which you don't have using this installation
+method. However, you can still take a look at the procedure and the code, and
+use it as an example of what can be accomplished using **chipwhisperer**.
 
 
 .. _install-repo-git:
@@ -202,14 +183,18 @@ repository.
 
 If you have Git already set up, this is easy to do:
 
-.. code::
+.. code:: bash
 
     git clone https://github.com/newaetech/chipwhisperer.git
     cd chipwhisperer
-    git checkout cw5dev
-    cd software
-    pip install -r requirements.txt
-    python setup.py develop --user
+
+    # To get the jupyter notebook tutorials
+    git submodule update --init jupyter
+    pip install -r jupyter/requirements.txt
+
+    # note the setup.py used to be in software, it was moved
+    # in version 5.1.0
+    python setup.py develop
 
 The user flag installs ChipWhisperer in the user's local python
 site-packages directory.
@@ -221,16 +206,8 @@ you need it:
 .. code::
 
     cd ..
-    git submodule init
-    git submodule update
+    git submodule update --init openadc
     cd openadc/controlsw/python
-    python setup.py develop --user
+    python setup.py develop
 
-Once ChipWhisperer is installed, you can run it through Jupyter by typing
-
-.. code::
-
-    jupyter notebook
-
-into the command prompt, which should open a new tab in your browser.
-Navigate to *jupyter/* to get started with the new Jupyter tutorials.
+Once ChipWhisperer is installed, you can :ref:`run chipwhisperer <starting>`.

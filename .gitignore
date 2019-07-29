@@ -50,3 +50,7 @@ docs/tutorials/img/*
 
 __pycache__/
 gift
+
+# for building the project as a sdist and wheel for pypi
+build/
+dist/

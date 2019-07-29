@@ -212,6 +212,53 @@ OpenADC Scope
         .. autodata:: chipwhisperer.capture.scopes.cwhardware.ChipWhispererGlitch.GlitchSettings.output
             :annotation: scope.glitch.output
 
+    .. attribute:: SAD
+        :annotation: scope.SAD - CW1200 Pro Only
+
+        Communicates with and drives the Sum of Absolute Differences module on the ChipWhisperer Pro.
+
+        Example for triggering off of some previously collected scope data::
+
+            scope.SAD.reference = trace.wave[1000:1000+128]
+            scope.SAD.threshold = 5000
+            scope.SAD.start()
+            scope.trigger.module = "SAD"
+            scope.adc.basic_mode = "rising_edge"
+
+            #can now capture as normal
+            trace = cw.capture_trace(scope, target, text, key)
+
+        .. autodata:: chipwhisperer.capture.scopes.cwhardware.ChipWhispererSAD.ChipWhispererSAD.threshold
+            :annotation: scope.SAD.threshold
+
+        .. autodata:: chipwhisperer.capture.scopes.cwhardware.ChipWhispererSAD.ChipWhispererSAD.reference
+            :annotation: scope.SAD.reference
+
+        .. method:: SAD.start()
+
+            Starts the SAD module. Must be done each time after changing the
+            reference waveform.
+
+    .. attribute:: DecodeIO
+        :annotation: scope.DecodeIO - CW1200 Pro Only
+
+        Communicates with and drives the Digital Pattern Match module on the ChipWhisperer Pro.
+
+        Basic usage for triggering on 'r\\n'::
+
+            # assuming setup scope
+            scope.trigger.triggers = 'tio1'
+            scope.trigger.module = 'DECODEIO'
+            scope.decode_IO.baud = 38400
+            scope.decode_IO.decode_type = 'USART'
+            scope.decode_IO.trigger_pattern = ['r', '\n']
+
+        .. autodata:: chipwhisperer.capture.scopes.cwhardware.ChipWhispererDecodeTrigger.ChipWhispererDecodeTrigger.trigger_pattern
+            :annotation: scope.DecodeIO.trigger_pattern
+
+        .. autodata:: chipwhisperer.capture.scopes.cwhardware.ChipWhispererDecodeTrigger.ChipWhispererDecodeTrigger.rx_baud
+            :annotation: scope.DecodeIO.rx_baud
+
     .. automethod:: chipwhisperer.capture.scopes.OpenADC.OpenADC.default_setup
 
     .. automethod:: chipwhisperer.capture.scopes.OpenADC.OpenADC.arm
@@ -335,6 +382,9 @@ or Pro.
     This is not necessary most of the time. It should be only done if you know exactly
     what you are doing. This process will erase the firmware on the scope and make it
     unusable until reprogrammed.
+
+.. seealso:: The manual way of updating the SAM3U Firmware can be found on the
+    `wiki <https://wiki.newae.com/Manual_SAM3U_Firmware_Update>`_.
 
 .. autoclass:: chipwhisperer.capture.scopes.cwhardware.ChipWhispererSAM3Update.SAMFWLoader
 
@@ -539,7 +589,13 @@ a :class:`Trace <chipwhisperer.common.traces.Trace>`. This trace is *namedtuple*
 pieces of data (wave, textin, textout, key), where *wave* is the actually
 numpy array of the power trace captured during the target's operation. The
 individual pieces of data can be accessed as a one would with a tuple or
-by using the provided attributes.
+by using the provided attributes. Example::
+
+    import chipwhisperer as cw
+    trace = cw.Trace(wave, textin, textout, key)
+
+This trace groups together the power trace (wave), and the process information
+that resulted in that trace such as textin, textout, and key.
 
 .. autoclass:: chipwhisperer.common.traces.Trace
 
