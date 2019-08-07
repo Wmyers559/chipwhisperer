@@ -35,6 +35,17 @@ On Ubuntu or similar:
     sudo apt install python3 python3-pip
 
 
+Packages
+========
+
+There are some packages required for **chipwhisperer** and its dependencies such
+as **pyusb** to work. Install using::
+
+.. code:: bash
+
+    sudo apt install libusb-dev make
+
+
 Compilers
 =========
 
@@ -157,21 +168,6 @@ notebooks.
 .. _WinPython: http://winpython.sourceforge.net/
 
 
-Python Packages
-===============
-
-There are a number of packages that the ChipWhisperer project uses.
-You'll need to install these so that the software can run. With your
-WinPython command prompt, navigate to where you downloaded
-ChipWhisperer to, then move to the *chipwhisperer/software/* directory.
-
-Run the following commands to get the needed packages:
-
-.. code:: bash
-
-    pip install -r requirements.txt
-
-
 Installing Hardware Drivers
 ===========================
 
@@ -196,7 +192,9 @@ appropriate compiler is on the path, whether that is the `ARM toolchain`_ or the
 ChipWhisperer
 =============
 
-You are ready to move on to :ref:`install-repo`.
+Remember that any time you install packages for python during the installation,
+use the *WinPython Command Prompt.exe*.You are ready to move on to
+:ref:`install-repo`.
 
 
 .. _prerequisites-mac:
@@ -205,5 +203,84 @@ You are ready to move on to :ref:`install-repo`.
 Mac OS X
 ********
 
-Not yet available. Once users have *brew* installed, instructions should be similar to
-:ref:`prerequisites-linux`.
+The Mac OS X instructions are similar to the :ref:`GNU/Linux <prerequisites-linux>`
+once you have **brew** installed.
+
+Brew
+====
+
+Open your bash terminal and paste this into the prompt:
+
+.. code:: bash
+
+    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+This snippet is taken directly from `brew's website`_. The script will guide
+you through the installation.
+
+.. _brew's website: https://brew.sh/
+
+Packages
+========
+
+**libusb** is required by the **chipwhisperer** software to communicate with
+the board. You can install it using **brew**:
+
+.. code:: bash
+
+    brew install libusb
+
+
+Python
+======
+
+You will require a python version >= to 3.5. You can get the binary from the
+`Python Software Foundation's website`_. Choose one of the stable versions that
+has an installer for your machine. You can also run this command in your terminal:
+
+.. code:: bash
+
+    brew install python3
+
+You will have to check the version this downloads. It is best to have python 3.7.x
+
+
+.. code:: bash
+
+    python --version
+
+If this installs a version lower than 3.5, just download and manually install the
+Python interpreter from the `Python Software Foundation's website`_. If you
+download and install the python interpreter manually from the website it should
+be available on the bash terminal after installation as:
+
+.. code:: bash
+
+    python3.7
+
+or the equivalent for your version.
+
+Compilers
+=========
+
+The compilers are also available on Mac OSx. The ARM compiler can be found
+on the `ARM website`_. If needed, the AVR compiler can be installed as well
+using:
+
+.. code:: bash
+
+    brew tap osx-cross/avr
+    brew install avr-gcc
+
+This brew install does not work for some older versions of Mac OS X. You will
+have to find a different way to install the compilers.
+
+ChipWhisperer
+=============
+
+You are now ready for :ref:`installing <install-repo>` ChipWhisperer.
+
+.. _Python Software Foundation's website: https://www.python.org/downloads/mac-osx/
+.. _ARM website: https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads
+
+
